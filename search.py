@@ -208,11 +208,54 @@ def nullHeuristic(state, problem=None):
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
     return 0
+from util import PriorityQueue
+
+class MyPriorityQueueWithFunction(PriorityQueue):
+    
+    def __init__(self, problem, priorityFunction):
+        self.priorityFunction = priorityFunction
+        PriorityQueue.__init__(self)
+        
+        self.problem = problem
+        
+    def push(self, item, heuristic):
+        PriorityQueue.push(self, item, self.priorityFunction(self.problem, item, heuristic))
+
+def func(problem, state, heuristic):
+    
+    new_pri = problem.getCostOfActions(state[1]) + heuristic(state[0], problem)
+    
+    return new_pri
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+   # util.raiseNotDefined()
+    discovered = []
+    path = []
+    
+    que = MyPriorityQueueWithFunction(problem, func)
+    que.push((problem.getStartState(), path), heuristic)
+    
+    if problem.isGoalState(problem.getStartState):
+        return []
+        
+        
+    while not que.isEmpty():
+        node, path = que.pop()
+        
+        if problem.isGoalState(node):
+            return path
+        
+        if node not in discovered: 
+            
+            discovered.append(node)
+            succ = problem.getSuccessors(node)
+            for state in succ:
+                if state[0] not in discovered:
+                    updated_path = path + [state[1]]
+                    que.push((state[0], updated_path), heuristic)
+
 
 
 # Abbreviations
